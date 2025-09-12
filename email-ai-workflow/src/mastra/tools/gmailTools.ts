@@ -10,7 +10,12 @@ import { EmailMessageSchema } from '../types/email';
 // Configuration constants
 const SCOPES = ['https://www.googleapis.com/auth/gmail.modify'];
 const TOKEN_PATH = path.join(process.cwd(), '..', '..', 'token.json');
-const CREDENTIALS_PATH = path.join(process.cwd(), '..', '..', 'credentials.json');
+const CREDENTIALS_PATH = path.join(
+  process.cwd(),
+  '..',
+  '..',
+  'credentials.json'
+);
 
 async function loadSavedCredentialsIfExist(): Promise<OAuth2Client | null> {
   try {
@@ -65,7 +70,7 @@ export const fetchUnreadEmailsTool = createTool({
     const gmail = google.gmail({ version: 'v1', auth });
 
     // Use the same query from your existing code
-    const query = 'is:unread newer_than:2d';
+    const query = 'is:unread ';
 
     const res = await gmail.users.messages.list({
       userId: 'me',

@@ -75,7 +75,6 @@ const analyzeIntentStep = createStep({
     }),
     intent: z.object({
       intent: z.enum(['reply', 'meeting', 'archive', 'human_review']),
-      confidence: z.number(),
       reasoning: z.string(),
       urgency: z.enum(['low', 'medium', 'high']),
       extractedInfo: z.object({
