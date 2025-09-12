@@ -7,18 +7,29 @@ import path from 'path';
 import { z } from 'zod';
 import { EmailMessageSchema } from '../types/email';
 
+// --- START OF CHANGES ---
+
 // Configuration constants
 const SCOPES = ['https://www.googleapis.com/auth/gmail.modify'];
-const TOKEN_PATH = path.join(process.cwd(), '..', '..', 'token.json');
+
+// Build an absolute path from the project's root directory (process.cwd())
 const CREDENTIALS_PATH = path.join(
-  process.cwd(),
-  '..',
-  '..',
+  '/Volumes/PortableSSD/content/email-ai-workflow/credentials/gmail/',
+
   'credentials.json'
 );
+const TOKEN_PATH = path.join(
+  '/Volumes/PortableSSD/content/email-ai-workflow/credentials/gmail/',
+
+  'token.json'
+);
+
+// --- END OF CHANGES ---gmail
 
 async function loadSavedCredentialsIfExist(): Promise<OAuth2Client | null> {
   try {
+    // Create the directory if it doesn't exist, especially for the token
+    await fs.mkdir(path.dirname(TOKEN_PATH), { recursive: true });
     const content = await fs.readFile(TOKEN_PATH, 'utf-8');
     const credentials = JSON.parse(content);
     return google.auth.fromJSON(credentials) as OAuth2Client;
@@ -28,6 +39,7 @@ async function loadSavedCredentialsIfExist(): Promise<OAuth2Client | null> {
 }
 
 async function saveCredentials(client: OAuth2Client): Promise<void> {
+  console.log('reading from', CREDENTIALS_PATH);
   const content = await fs.readFile(CREDENTIALS_PATH, 'utf-8');
   const keys = JSON.parse(content);
   const key = keys.installed || keys.web;
@@ -37,6 +49,8 @@ async function saveCredentials(client: OAuth2Client): Promise<void> {
     client_secret: key.client_secret,
     refresh_token: client.credentials.refresh_token,
   });
+  // Ensure the directory exists before writing the token
+  await fs.mkdir(path.dirname(TOKEN_PATH), { recursive: true });
   await fs.writeFile(TOKEN_PATH, payload);
 }
 
@@ -118,7 +132,7 @@ export const fetchUnreadEmailsTool = createTool({
           from,
           body,
           timestamp: date ? new Date(date) : new Date(),
-          threadId: msg.data.threadId,
+          threadId: msg.data.threadId || undefined,
         });
       }
     }
@@ -197,15 +211,20 @@ export const markEmailAsReadTool = createTool({
     const auth = await authorize();
     const gmail = google.gmail({ version: 'v1', auth });
 
-    await gmail.users.messages.modify({
-      userId: 'me',
-      id: context.messageId,
-      requestBody: {
-        removeLabelIds: ['UNREAD'],
-      },
-    });
+    try {
+      await gmail.users.messages.modify({
+        userId: 'me',
+        id: context.messageId,
+        requestBody: {
+          removeLabelIds: ['UNREAD'],
+        },
+      });
 
-    return { success: true };
+      return { success: true };
+    } catch (error) {
+      console.error('Error marking email as read:', error);
+      return { success: false };
+    }
   },
 });
 
@@ -222,14 +241,19 @@ export const archiveEmailTool = createTool({
     const auth = await authorize();
     const gmail = google.gmail({ version: 'v1', auth });
 
-    await gmail.users.messages.modify({
-      userId: 'me',
-      id: context.messageId,
-      requestBody: {
-        removeLabelIds: ['INBOX'],
-      },
-    });
+    try {
+      await gmail.users.messages.modify({
+        userId: 'me',
+        id: context.messageId,
+        requestBody: {
+          removeLabelIds: ['INBOX'],
+        },
+      });
 
-    return { success: true };
+      return { success: true };
+    } catch (error) {
+      console.error('Error archiving email:', error);
+      return { success: false };
+    }
   },
 });
