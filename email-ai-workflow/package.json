@@ -6,7 +6,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "  mastra dev ",
     "build": "mastra build ",
-    "start": "mastra start"
+    "start": "mastra start",
+    "generate-tokens": "npx tsx scripts/generate-tokens.ts",
+    "workflow:email": "npx tsx scripts/run-workflow.ts"
   },
   "keywords": [],
   "author": "",

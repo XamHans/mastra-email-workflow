@@ -3,7 +3,7 @@ import { Agent } from '@mastra/core/agent';
 import { EmailIntentSchema } from '../types/email';
 
 export const intentAgent = new Agent({
-  name: 'Simple Intent Agent',
+  name: 'Intent Agent',
   description: 'Determines basic email intent for routing',
   instructions: `Analyze emails and classify them into one of these intents:
 
@@ -13,7 +13,7 @@ export const intentAgent = new Agent({
 4. **human_review** - Complex or unclear emails
 
 Provide the intent and brief reasoning.`,
-  model: openai('gpt-4o'),
+  model: openai('gpt-4o-mini'),
 });
 
 export const analyzeEmailIntentTool = async (emailData: {

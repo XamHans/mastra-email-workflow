@@ -11,8 +11,10 @@ node_modules/
 .env.production.local
 
 # Google OAuth credentials and tokens
-credentials.json
-token.json
+credentials/*/credentials.json
+credentials/*/token.json
+# Keep example files but ignore actual credentials
+!credentials/**/credentials.json.example
 
 # Build outputs
 .mastra/
